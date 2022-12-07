@@ -1,7 +1,11 @@
 {
-  "name": "recent-files",
+  "name": "monekoluv.recent-files",
   "displayName": "Recent Files",
   "publisher": "monekoluv",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sbatten/recent-files"
+  },
   "description": "",
   "version": "0.1.0",
   "engines": {
