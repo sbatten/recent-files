@@ -12,6 +12,6 @@ editor group it belongs to as this is not important to my workflow.
 
 Users appreciate release notes as you update your extension.
 
-### 1.0.0
+### 0.1.0
 
 Initial release of recent files.
