@@ -34,9 +34,12 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
   }
 
   private addFile(document: vscode.TextDocument) {
-    if (this.model.find((file) => file.uri.path === document.uri.path) === undefined) {
+    let found = this.model.find((file) => file.uri.path === document.uri.path)
+    if (found === undefined) { 
       this.model.splice(0, 0, new RecentFile(document.uri, path.basename(document.fileName)));
       this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
+    }else if(found.uri.toString() !== document.uri.toString()){
+      this.model.splice(this.model.indexOf(found), 1, new RecentFile(document.uri, path.basename(document.fileName)))
     }
   }
 
