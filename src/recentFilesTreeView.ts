@@ -40,6 +40,7 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
       this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
     }else if(found.uri.toString() !== document.uri.toString()){
       this.model.splice(this.model.indexOf(found), 1, new RecentFile(document.uri, path.basename(document.fileName)))
+      this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
     }
   }
 
