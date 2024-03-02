@@ -19,6 +19,12 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
   constructor(private readonly context: vscode.ExtensionContext) {
     super(() => this.dispose());
 
+    // fail safe check, if not array, set it to array.
+    // if not array, will fail the rest of the functionality
+    let check_is_array = context.workspaceState.get('recentFiles', []);
+    if(!Array.isArray(check_is_array))
+      this.context.workspaceState.update('recentFiles', []);
+
     this.model = context.workspaceState.get('recentFiles', [])
       .map((serialized: ISerializedFile) => RecentFile.fromJSON(serialized));
 
