@@ -9,6 +9,7 @@ interface ISerializedFile {
 export class RecentFilesProvider extends vscode.Disposable implements vscode.TreeDataProvider<RecentFile> {
   private model: RecentFile[] = [];
   private disposables: vscode.Disposable[] = [];
+  private arraySize = 50;
 
   private _onDidChangeTreeData: vscode.EventEmitter<void | RecentFile | RecentFile[] | null | undefined> =
     new vscode.EventEmitter<void | RecentFile | RecentFile[] | null | undefined>();
@@ -47,7 +48,11 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
       }
     }
 
-	this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
+    this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
+    
+    // Reduce the list if exceeds the maximum size
+    while(this.model.length > this.arraySize)
+      this.model.pop();
   }
 
   getTreeItem(element: RecentFile): vscode.TreeItem | Thenable<vscode.TreeItem> {
