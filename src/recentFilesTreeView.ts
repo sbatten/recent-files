@@ -43,7 +43,11 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
   private addFile(document: vscode.TextDocument) {
     // If file is NOT in array, add into array
     if (this.model.find((file) => file.uri.path === document.uri.path) === undefined) {
-      this.model.splice(0, 0, new RecentFile(document.uri, path.basename(document.fileName)));
+      let uri = document.uri;
+      let fileName = path.basename(document.fileName);
+      let filePath = uri.toString().substring(("file://").length);
+      fileName = fileName + '\t' + '(' + filePath + ')'
+      this.model.splice(0, 0, new RecentFile(uri, fileName));
     }
     // else, rearrange the index to the beginning of array
     else {
