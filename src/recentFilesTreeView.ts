@@ -9,6 +9,7 @@ interface ISerializedFile {
 export class RecentFilesProvider extends vscode.Disposable implements vscode.TreeDataProvider<RecentFile> {
   private model: RecentFile[] = [];
   private disposables: vscode.Disposable[] = [];
+  private arraySize = 50;
 
   private _onDidChangeTreeData: vscode.EventEmitter<void | RecentFile | RecentFile[] | null | undefined> =
     new vscode.EventEmitter<void | RecentFile | RecentFile[] | null | undefined>();
@@ -17,6 +18,12 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
 
   constructor(private readonly context: vscode.ExtensionContext) {
     super(() => this.dispose());
+
+    // fail safe check, if not array, set it to array.
+    // if not array, will fail the rest of the functionality
+    let check_is_array = context.workspaceState.get('recentFiles', []);
+    if(!Array.isArray(check_is_array))
+      this.context.workspaceState.update('recentFiles', []);
 
     this.model = context.workspaceState.get('recentFiles', [])
       .map((serialized: ISerializedFile) => RecentFile.fromJSON(serialized));
@@ -34,10 +41,28 @@ export class RecentFilesProvider extends vscode.Disposable implements vscode.Tre
   }
 
   private addFile(document: vscode.TextDocument) {
+    // If file is NOT in array, add into array
     if (this.model.find((file) => file.uri.path === document.uri.path) === undefined) {
-      this.model.splice(0, 0, new RecentFile(document.uri, path.basename(document.fileName)));
-      this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
+      let uri = document.uri;
+      let fileName = path.basename(document.fileName);
+      let filePath = uri.toString().substring(("file://").length);
+      fileName = fileName + '\t' + '(' + filePath + ')'
+      this.model.splice(0, 0, new RecentFile(uri, fileName));
     }
+    // else, rearrange the index to the beginning of array
+    else {
+      const matchingIndex = this.model.findIndex((file) => file.uri.path === document.uri.path);
+      if (matchingIndex !== -1) {
+        const removedFile = this.model.splice(matchingIndex, 1)[0];
+        this.model.splice(0, 0, removedFile);
+      }
+    }
+
+    this.context.workspaceState.update('recentFiles', this.model.map((file) => file.toJSON()));
+    
+    // Reduce the list if exceeds the maximum size
+    while(this.model.length > this.arraySize)
+      this.model.pop();
   }
 
   getTreeItem(element: RecentFile): vscode.TreeItem | Thenable<vscode.TreeItem> {
